@@ -123,3 +123,26 @@ gh pr create --title "feat: ..." --body "..."
 gh issue create --title "..." --body "..."
 gh issue list
 ```
+
+## 测试规范
+
+- 使用 `pytest` + `pytest-asyncio`
+- 使用 `httpx.AsyncClient` 作为异步测试客户端
+- 测试文件放在 `tests/` 目录，命名 `test_*.py`
+- 最低覆盖率 80%
+
+## Git Worktree 工作规范
+
+本项目使用 git worktree 进行功能隔离开发，worktree 目录位于 `.claude/worktrees/`。
+
+### 关键规则
+
+- **所有文件操作必须在 worktree 目录内完成**，禁止修改主仓库（`claude-code-learning/`）的文件
+- worktree 路径示例：`.claude/worktrees/feature5/`，其中的文件是主仓库的独立副本
+- 主仓库和 worktree 共享 `.git` 对象，但**工作目录完全隔离**
+
+### 常见陷阱
+
+- 编辑 `/Users/a114514/claude-code-learning/.gitignore` 会改到 `main` 分支，正确路径应为 worktree 内的 `.gitignore`
+- `.claude/` 目录在主仓库和 worktree 中各有一份，注意区分
+- 使用绝对路径时务必确认前缀是 worktree 路径，而非主仓库路径
