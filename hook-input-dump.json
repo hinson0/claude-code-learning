@@ -1,0 +1,196 @@
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/Users/a114514/claude-code-learning/.claude/hooks/session-start-demo.sh",
+    "content": "#!/bin/bash\n# session-start-demo.sh — SessionStart hook 演示\n# 记录每次会话启动的信息\n\nINPUT=$(cat)\nTIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')\nSESSION_ID=$(echo \"$INPUT\" | jq -r '.session_id // \"unknown\"')\nEVENT=$(echo \"$INPUT\" | jq -r '.hook_event_name // \"unknown\"')\n\n# 记录到日志\necho \"[$TIMESTAMP] event=$EVENT session=$SESSION_ID\" >> \"$CLAUDE_PROJECT_DIR/sandbox/session-start.log\"\n\n# 完整 JSON 也记录一份，方便学习\necho \"$INPUT\" | jq '.' >> \"$CLAUDE_PROJECT_DIR/sandbox/session-start-dump.json\"\n\nexit 0\n"
+  },
+  "tool_use_id": "toolu_01AfZwToEtjBo8e97eVY93Rt"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "chmod +x /Users/a114514/claude-code-learning/.claude/hooks/session-start-demo.sh",
+    "description": "Make script executable"
+  },
+  "tool_use_id": "toolu_01TDqev8zJgW1Gf7KTxcaPXz"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Write",
+  "tool_input": {
+    "file_path": "/Users/a114514/claude-code-learning/examples/hooks/shell-basics.md",
+    "content": "# Shell 基础知识笔记（Hook 编写相关）\n\n## 1. `INPUT=$(cat)` — 从 stdin 读取全部内容\n\n```bash\nINPUT=$(cat)\n```\n\n| 部分 | 含义 |\n|------|------|\n| `cat` | 不带参数时从 stdin 读取 |\n| `$(...)` | 命令替换，把输出赋给变量 |\n| `INPUT=` | 存到变量 |\n\nHook 脚本中，Claude Code 通过管道把 JSON 传入脚本的 stdin，`cat` 读取后存入变量：\n\n```bash\n#!/bin/bash\nINPUT=$(cat)                              # 读取 Claude Code 传入的 JSON\nTOOL=$(echo \"$INPUT\" | jq -r '.tool_name')  # 用 jq 解析字段\n```\n\n---\n\n## 2. 管道与子 Shell 的变量隔离\n\n管道 `|` 的每一段都在**独立的子 shell** 里运行，变量不能跨段传递：\n\n```bash\n# 错误示范\necho '{\"foo\": \"bar\"}' | INPUT=$(cat) | echo $INPUT\n#                        ↑ 读到了内容   ↑ $INPUT 是空的！变量在另一个子 shell 里\n```\n\n两种传递机制的区别：\n\n| 传递方式 | 能否跨子 shell |\n|---------|--------------|\n| 管道（stdout → stdin） | ✓ 可以，OS 层面的 IPC |\n| Shell 变量 | ✗ 不行，子 shell 有独立变量空间 |\n\n正确的测试写法：\n\n```bash\n# 方式1：分组括号，让两条命令在同一个子 shell 里\necho '{\"foo\": \"bar\"}' | (INPUT=$(cat); echo $INPUT)\n\n# 方式2：不用管道，直接赋值\nINPUT=$(echo '{\"foo\": \"bar\"}'); echo $INPUT\n```\n\nHook 脚本里没有这个问题，因为**整个脚本是一个进程**，`INPUT` 在脚本范围内全局可见。\n\n---\n\n## 3. `echo $INPUT` vs `echo \"$INPUT\"`\n\n加不加双引号，决定 Shell 是否对变量值做进一步展开：\n\n| | `echo $INPUT` | `echo \"$INPUT\"` |\n|---|---|---|\n| 空格/换行 | 被 Shell 分词，压缩成一行 | 原样保留 |\n| `*` `?` 等通配符 | 被 glob 展开为文件列表 | 当普通字符处理 |\n| 多行 JSON | 换行丢失 | 结构保留 |\n\n示例：\n\n```bash\nINPUT='{\"a\": 1,\n\"b\": 2}'\n\necho $INPUT    # {\"a\": 1, \"b\": 2}      ← 换行丢失\necho \"$INPUT\"  # {\"a\": 1,\n               # \"b\": 2}               ← 原样保留\n```\n\n通配符展开的危险情况：\n\n```bash\nINPUT=\"*.sh\"\n\necho $INPUT    # block-rm.sh echo.sh protect-files.sh  ← 被展开成文件！\necho \"$INPUT\"  # *.sh                                   ← 原样输出\n```\n\n**结论：操作变量时始终加双引号**，尤其是传给 `jq` 时：\n\n```bash\necho \"$INPUT\" | jq '.tool_name'   # ✓ 正确\necho $INPUT   | jq '.tool_name'   # ✗ JSON 含特殊字符时可能出错\n```\n"
+  },
+  "tool_use_id": "toolu_01GwAs6SBXUePCU4E7vJJzPf"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Skill",
+  "tool_input": {
+    "skill": "smart:push"
+  },
+  "tool_use_id": "toolu_01Xbu9s9seGgEN4yUzaoLQBK"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "git status && git diff --stat",
+    "description": "Check working tree status"
+  },
+  "tool_use_id": "toolu_012y1BGZ4QtWfWAss4Y7cHZn"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "git log --oneline -5 && echo \"---\" && git log --oneline origin/main -5",
+    "description": "Compare local and remote commit history"
+  },
+  "tool_use_id": "toolu_018GS2VWJrnQ8LbzQ9iGCsD7"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "git pull --rebase origin main",
+    "description": "Rebase local commits on top of remote main"
+  },
+  "tool_use_id": "toolu_01XWg13qDf8VRDviDX4vPwUo"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "git stash -u",
+    "description": "Stash all changes including untracked files"
+  },
+  "tool_use_id": "toolu_016Zj2H1uy4Y1RXaPvnpJ6mF"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Read",
+  "tool_input": {
+    "file_path": "/Users/a114514/claude-code-learning/CLAUDE.md"
+  },
+  "tool_use_id": "toolu_012PThG3uLGXcGP5GvgiWvan"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Read",
+  "tool_input": {
+    "file_path": "/Users/a114514/claude-code-learning/.gitignore"
+  },
+  "tool_use_id": "toolu_01Q4pRHYboXm26fCRqbkig1f"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Edit",
+  "tool_input": {
+    "file_path": "/Users/a114514/claude-code-learning/.gitignore",
+    "old_string": "<<<<<<< Updated upstream\n.cursor\n=======\nsandbox/\n*.log\n>>>>>>> Stashed changes",
+    "new_string": ".cursor\nsandbox/\n*.log",
+    "replace_all": false
+  },
+  "tool_use_id": "toolu_015ENUsvmMvQjZ78RuceK5Jo"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Edit",
+  "tool_input": {
+    "file_path": "/Users/a114514/claude-code-learning/CLAUDE.md",
+    "old_string": "<<<<<<< Updated upstream\n| 类型 | 用途 |\n|------|------|\n| `feat:` | 新功能 |\n| `fix:` | 修复问题 |\n| `refactor:` | 重构 |\n| `docs:` | 文档 |\n| `chore:` | 杂项维护 |\n\n**Issue 驱动开发流程**：创建 Issue → 功能分支 → 实现 → 提交（关联 Issue） → PR\n\n## 常用命令\n\n```bash\n# 分支管理\ngit checkout -b feature/<feature-name>\n\n# 提交与推送\ngit add <specific-files>\ngit commit -m \"feat: 功能描述（closes #N）\"\ngit push -u origin feature/<feature-name>\n\n# PR 创建\ngh pr create --title \"feat: ...\" --body \"...\"\n\n# Issue 管理\ngh issue create --title \"...\" --body \"...\"\ngh issue list\n```\n\n## 测试规范\n\n- 使用 `pytest` + `pytest-asyncio`\n- 使用 `httpx.AsyncClient` 作为异步测试客户端\n- 测试文件放在 `tests/` 目录，命名 `test_*.py`\n- 最低覆盖率 80%\n\n## Git Worktree 工作规范\n\n本项目使用 git worktree 进行功能隔离开发，worktree 目录位于 `.claude/worktrees/`。\n\n### 关键规则\n\n- **所有文件操作必须在 worktree 目录内完成**，禁止修改主仓库（`claude-code-learning/`）的文件\n- worktree 路径示例：`.claude/worktrees/feature5/`，其中的文件是主仓库的独立副本\n- 主仓库和 worktree 共享 `.git` 对象，但**工作目录完全隔离**\n\n### 常见陷阱\n\n- 编辑 `/Users/a114514/claude-code-learning/.gitignore` 会改到 `main` 分支，正确路径应为 worktree 内的 `.gitignore`\n- `.claude/` 目录在主仓库和 worktree 中各有一份，注意区分\n- 使用绝对路径时务必确认前缀是 worktree 路径，而非主仓库路径\n=======\n类型：feat / fix / refactor / docs / chore\n>>>>>>> Stashed changes",
+    "new_string": "类型：feat / fix / refactor / docs / chore",
+    "replace_all": false
+  },
+  "tool_use_id": "toolu_01VdRtgpyGBbrK9MspwYGhUo"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "git add CLAUDE.md README.md .gitignore && git rm -r writing-master/ 2>/dev/null; git status --short",
+    "description": "Stage restructure files and remove duplicate writing-master"
+  },
+  "tool_use_id": "toolu_01U84aF2GuCuGfUnVLQhkyc9"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "git commit -m \"$(cat <<'EOF'\nrefactor: 重构项目目录为学习仓库结构\n\n- 重写 CLAUDE.md 和 README.md 反映新目录结构\n- 添加 examples/、sandbox/ 分区，.gitignore 忽略临时文件\n- 删除根目录重复的 writing-master/\nEOF\n)\"",
+    "description": "Commit A: project restructure"
+  },
+  "tool_use_id": "toolu_01NyiYXwfBn8hK3wMbCEeNRf"
+}
+{
+  "session_id": "a63a500f-78d2-4da1-9c8c-e18050246d6a",
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a63a500f-78d2-4da1-9c8c-e18050246d6a.jsonl",
+  "cwd": "/Users/a114514/claude-code-learning",
+  "permission_mode": "default",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "git add .claude/settings.json .claude/hooks/protect-files.sh .claude/hooks/dump-input.sh .claude/hooks/session-start-demo.sh .claude/hookify.tool-call-notify.local.md .claude/hookify.yzb-well-done.local.md .claude/hookify.tell-joke.local.md hook-input-dump.json",
+    "description": "Stage hook related files"
+  },
+  "tool_use_id": "toolu_01BLSZKAtjKueu238JLaiasj"
+}
