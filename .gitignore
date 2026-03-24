@@ -5,3 +5,5 @@
 .cursor
 sandbox/
 *.log
+hook-input-dump.json
+.claude/hook-logs/
