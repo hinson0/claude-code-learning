@@ -1,4 +1,7 @@
 .claude/settings.local.json
+.claude/hooks/.*.swp
 .DS_Store
 .claude/worktrees/
 .cursor
+sandbox/
+*.log

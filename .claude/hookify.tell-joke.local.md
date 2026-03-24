@@ -1,6 +1,6 @@
 ---
 name: tell-joke
-enabled: true
+enabled: false 
 event: stop
 pattern: .*
 action: warn
