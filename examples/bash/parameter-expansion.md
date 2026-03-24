@@ -118,6 +118,53 @@ EXT="${FILE_PATH##*.}"        # → "json", "sh" 等
 
 ---
 
+## 引号、Word Splitting 与 Glob 展开
+
+### 三种写法对比
+
+| 写法 | word splitting | glob 展开 | 界定变量边界 | 参数扩展 |
+|------|:-:|:-:|:-:|:-:|
+| `$input` | ✅ 会 | ✅ 会 | ❌ | ❌ |
+| `${input}` | ✅ 会 | ✅ 会 | ✅ | ✅ |
+| `"$input"` | ❌ 禁止 | ❌ 禁止 | ✅ | ❌ |
+| `"${input}"` | ❌ 禁止 | ❌ 禁止 | ✅ | ✅ |
+
+### Word Splitting（词分割）
+
+变量未加引号时，Shell 会按 `$IFS`（默认空格/Tab/换行）把值拆成多个词：
+
+```bash
+input="hello world"
+cp $input /tmp/      # 拆成 cp hello world /tmp/ → 两个参数，报错
+cp "$input" /tmp/    # 正确：一个参数 "hello world"
+```
+
+### Glob 展开
+
+变量未加引号时，若值匹配文件名通配符，会被展开为文件名列表：
+
+```bash
+input="*.txt"
+echo $input          # 展开为当前目录所有 .txt 文件名！
+echo "$input"        # 输出字面量 *.txt，安全
+```
+
+### 最佳实践
+
+```bash
+# 几乎所有情况都应加双引号
+file_path="$1"
+cp "${file_path}" "${file_path}.bak"   # 路径含空格也安全
+
+# 仅在明确需要 word splitting 时才省略引号（如拆分命令参数列表）
+args="--verbose --dry-run"
+ls $args    # 刻意拆成两个参数
+```
+
+> **规则**：除非明确需要 word splitting，否则**始终加双引号**。
+
+---
+
 ## 核心价值
 
 `${}` 的字符串操作**不依赖外部命令**（`sed`/`awk`/`basename` 等），全部在 shell 内完成，更快也更可移植。
