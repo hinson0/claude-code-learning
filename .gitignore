@@ -7,3 +7,5 @@ sandbox/
 *.log
 hook-input-dump.json
 .claude/hook-logs/
+.claude/session-logs/
+.remember/
