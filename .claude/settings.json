@@ -33,6 +33,8 @@
     ]
   },
   "enabledPlugins": {
-    "learning-output-style@claude-plugins-official": true
-  }
+    "learning-output-style@claude-plugins-official": false,
+    "smart@smart": false
+  },
+  "outputStyle": "Explanatory"
 }
