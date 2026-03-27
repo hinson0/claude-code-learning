@@ -14,14 +14,15 @@ Claude Code 自定义能力学习仓库。
 ├── README.md                              # 项目说明
 ├── .gitignore
 │
-├── examples/                              # 学习示例与笔记（按主题分区）
-│   ├── hooks/                             # Hook 学习（含示例脚本 + README 笔记）
-│   ├── hookify/                           # Hookify 规则学习
-│   ├── agents/                            # Agent 学习
-│   ├── skills/                            # Skill 学习
-│   └── plugins/                           # Plugin 学习
-│
 ├── sandbox/                               # 实验临时文件（已 gitignore）
+├── knowledges/                            # 知识笔记（按主题分区）
+│   ├── bash/                              # Bash 脚本基础（shell-basics, parameter-expansion）
+│   └── claude-code/                       # Claude Code 各功能知识
+│       ├── agents/                        # Agent 使用与学习笔记
+│       ├── hooks/                         # Hook 事件、脚本示例、Prompt Hook
+│       ├── hookify/                       # Hookify 规则学习
+│       ├── plugins/                       # Plugin 开发（结构、设置、创建、hook 开发）
+│       └── skills/                        # Skill 学习笔记
 │
 └── .claude/                               # 实际生效的 Claude Code 配置
     ├── settings.json                      # hooks 注册与权限
@@ -30,6 +31,8 @@ Claude Code 自定义能力学习仓库。
     ├── hooks/                             # Shell Hook 脚本
     └── skills/                            # 自定义 Skill 定义
 ```
+
+> ⚠️ 本项目的 rm 命令会被 hookify 无条件拦截（`action: block`）。Claude 无法执行任何删除操作，用户需自行在终端运行（可用 `! rm ...` 前缀）。
 
 ## Hook 编写规范
 
@@ -44,7 +47,7 @@ Claude Code 自定义能力学习仓库。
 
 ### Hookify 规则
 
-文件位置：`.claude/hookify.<rule-name>.local.md`
+文件位置：`.claude/hookify/hookify.<rule-name>.local.md`
 
 必需的 frontmatter 字段：`name`、`enabled`、`event`、`pattern`、`action`
 
