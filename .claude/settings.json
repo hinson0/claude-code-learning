@@ -1,40 +1,6 @@
 {
-  "hooks": {
-    "SessionStart": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/session-start-demo.sh"
-          }
-        ]
-      }
-    ],
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PROJECT_DIR}/.claude/hooks/command-log.sh"
-          }
-        ]
-      },
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "检查 $TOOL_INPUT 中的 bash 命令是否包含 rm（包括 rm、rm -r、rm -rf 等变体）。\n\n如果命令包含 rm，直接输出：{\"ok\": false, \"reason\": \"⚠️ 检测到删除命令已被自动拦截。如需执行，请在消息中明确说明：'我已确认要执行此删除操作'\"}\n\n如果命令不包含 rm，直接输出：{\"ok\": true}"
-          }
-        ]
-      }
-    ]
-  },
   "enabledPlugins": {
-    "learning-output-style@claude-plugins-official": false,
-    "smart@smart": false
+    "smart@smart": true
   },
   "outputStyle": "Explanatory"
 }
