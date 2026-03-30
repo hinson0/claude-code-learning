@@ -1,0 +1,51 @@
+// Claude Code Statusline JSON — captured 2026-03-30T00:17:33Z
+// Ref: https://docs.claude.dev/docs/statusline#available-data
+{
+  "session_id": "a1601859-0a7c-4f0c-acda-8a04ee8f8871", // 唯一会话标识符
+  "transcript_path": "/Users/a114514/.claude/projects/-Users-a114514-claude-code-learning/a1601859-0a7c-4f0c-acda-8a04ee8f8871.jsonl", // 对话记录文件路径
+  "cwd": "/Users/a114514/claude-code-learning", // 当前工作目录（与 workspace.current_dir 相同）
+  "model": { // 模型信息
+    "id": "claude-opus-4-6[1m]", // 当前模型标识符
+    "display_name": "Opus 4.6 (1M context)" // 模型显示名称
+  },
+  "workspace": { // 工作区信息
+    "current_dir": "/Users/a114514/claude-code-learning", // 当前工作目录
+    "project_dir": "/Users/a114514/claude-code-learning", // 启动 Claude Code 时的目录（会话期间 cwd 可能改变，此值不变）
+    "added_dirs": [] // 额外添加的目录列表
+  },
+  "version": "2.1.87", // Claude Code 版本号
+  "output_style": { // 输出样式配置
+    "name": "Explanatory" // 当前输出样式名称
+  },
+  "cost": { // 会话成本与统计
+    "total_cost_usd": 1.80678815, // 总会话成本（美元）
+    "total_duration_ms": 1359800, // 自会话开始的总挂钟时间（毫秒）
+    "total_api_duration_ms": 281632, // 等待 API 响应的总时间（毫秒）
+    "total_lines_added": 0, // 累计新增代码行数
+    "total_lines_removed": 0 // 累计删除代码行数
+  },
+  "context_window": { // 上下文窗口状态
+    "total_input_tokens": 479, // 整个会话的累积输入 token 总数
+    "total_output_tokens": 14278, // 整个会话的累积输出 token 总数
+    "context_window_size": 1000000, // 最大上下文窗口大小（token），默认 200K，扩展模型为 1M
+    "current_usage": { // 最近一次 API 调用的 token 明细（首次调用前为 null）
+      "input_tokens": 1, // 当前上下文中的输入 token
+      "output_tokens": 237, // 本次生成的输出 token
+      "cache_creation_input_tokens": 1304, // 写入缓存的 token 数
+      "cache_read_input_tokens": 52954 // 从缓存读取的 token 数
+    },
+    "used_percentage": 5, // 已使用上下文窗口百分比（仅计输入 token）
+    "remaining_percentage": 95 // 剩余上下文窗口百分比
+  },
+  "exceeds_200k_tokens": false, // 最近 API 响应总 token 是否超过 200K（固定阈值，与实际窗口大小无关）
+  "rate_limits": { // 速率限制信息
+    "five_hour": { // 5 小时滚动窗口限制
+      "used_percentage": 10, // 5 小时速率限制使用百分比
+      "resets_at": 1774843200 // 5 小时限制重置的 Unix 时间戳
+    },
+    "seven_day": { // 7 天滚动窗口限制
+      "used_percentage": 76, // 7 天速率限制使用百分比
+      "resets_at": 1775091600 // 7 天限制重置的 Unix 时间戳
+    }
+  }
+}
