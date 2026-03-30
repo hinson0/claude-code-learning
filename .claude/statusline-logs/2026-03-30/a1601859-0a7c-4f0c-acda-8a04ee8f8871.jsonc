@@ -1,4 +1,4 @@
-// Claude Code Statusline JSON — captured 2026-03-30T00:18:25Z
+// Claude Code Statusline JSON — captured 2026-03-30T00:18:34Z
 // Ref: https://docs.claude.dev/docs/statusline#available-data
 {
   "session_id": "a1601859-0a7c-4f0c-acda-8a04ee8f8871", // 唯一会话标识符
@@ -18,21 +18,21 @@
     "name": "Explanatory" // 当前输出样式名称
   },
   "cost": { // 会话成本与统计
-    "total_cost_usd": 1.8730974, // 总会话成本（美元）
-    "total_duration_ms": 1412302, // 自会话开始的总挂钟时间（毫秒）
-    "total_api_duration_ms": 287886, // 等待 API 响应的总时间（毫秒）
+    "total_cost_usd": 1.93644215, // 总会话成本（美元）
+    "total_duration_ms": 1420584, // 自会话开始的总挂钟时间（毫秒）
+    "total_api_duration_ms": 294793, // 等待 API 响应的总时间（毫秒）
     "total_lines_added": 0, // 累计新增代码行数
     "total_lines_removed": 0 // 累计删除代码行数
   },
   "context_window": { // 上下文窗口状态
-    "total_input_tokens": 483, // 整个会话的累积输入 token 总数
-    "total_output_tokens": 14498, // 整个会话的累积输出 token 总数
+    "total_input_tokens": 485, // 整个会话的累积输入 token 总数
+    "total_output_tokens": 14729, // 整个会话的累积输出 token 总数
     "context_window_size": 1000000, // 最大上下文窗口大小（token），默认 200K，扩展模型为 1M
     "current_usage": { // 最近一次 API 调用的 token 明细（首次调用前为 null）
       "input_tokens": 1, // 当前上下文中的输入 token
-      "output_tokens": 1, // 本次生成的输出 token
+      "output_tokens": 22, // 本次生成的输出 token
       "cache_creation_input_tokens": 165, // 写入缓存的 token 数
-      "cache_read_input_tokens": 54946 // 从缓存读取的 token 数
+      "cache_read_input_tokens": 55351 // 从缓存读取的 token 数
     },
     "used_percentage": 6, // 已使用上下文窗口百分比（仅计输入 token）
     "remaining_percentage": 94 // 剩余上下文窗口百分比
